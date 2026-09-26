@@ -1,0 +1,60 @@
+codecov:
+  require_ci_to_pass: true
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+
+      rust:
+        target: auto
+        threshold: 1%
+        flags:
+          - rust
+
+      python:
+        target: auto
+        threshold: 1%
+        flags:
+          - python
+
+    patch:
+      default:
+        target:
+        threshold: 2%
+
+flags:
+  rust:
+    paths:
+      - src/
+      - crates/
+      - Cargo.toml
+    carryforward: false
+
+  python:
+    paths:
+      - python/
+      - tests/
+      - setup.py
+      - pyproject.toml
+    carryforward: false
+
+ignore:
+  - "**/*.md"
+  - "**/target/**"
+  - "**/.venv/**"
+  - "**/venv/**"
+  - "**/__pycache__/**"
+  - "**/tests/**"
+  - "**/benches/**"
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false
