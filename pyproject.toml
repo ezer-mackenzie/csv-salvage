@@ -4,32 +4,50 @@ build-backend = "maturin"
 
 [project]
 name = "csv-salvage"
-description = "High-performance library to salvage, repair, and parse corrupted or malformed CSV files."
+description = "High-performance, fault-tolerant CSV salvage and reconstruction engine powered by Rust and PyO3"
 readme = "README.md"
-license = { text = "Apache-2.0" }
-authors = [
-    {name = "Eli-ezer Reuven Ramirez Ruiz", email = "ramirez.ruiz.eliezer.reuven@gmail.com"}
-]
-requires-python = ">=3.8"
+license = "Apache-2.0"
+license-files = ["LICENSE.md"]
+authors = [{ name = "Eli-ezer Reuven Ramirez Ruiz" }]
+keywords = ["csv", "salvage", "repair", "parser", "dataframe"]
+requires-python = ">=3.9,<3.15"
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Rust",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
-    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
 ]
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/eliezer-reuven/csv-salvage"
-Repository = "https://github.com/eliezer-reuven/csv-salvage"
-Issues = "https://github.com/eliezer-reuven/csv-salvage/issues"
+Documentation = "https://csv-salvage.readthedocs.io/"
+Repository = "https://github.com/ezer-mackenzie/csv-salvage"
+Issues = "https://github.com/ezer-mackenzie/csv-salvage/issues"
+Changelog = "https://github.com/ezer-mackenzie/csv-salvage/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+release = ["twine>=6.1,<7.0"]
+docs = [
+    "mkdocs>=1.6,<2.0",
+]
+dev = [
+    "maturin>=1.15,<2.0",
+    "pytest>=8.0",
+]
+
+[tool.maturin]
+module-name = "csv_salvage._csv_salvage_backend"
+python-source = "python"
+include = [
+    { path = "python/csv_salvage/py.typed", format = "wheel" },
+    { path = "tests/*.py", format = "sdist" },
+    { path = "tools/*.py", format = "sdist" },
+]
+
+
