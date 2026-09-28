@@ -1,8 +1,10 @@
 # csv-salvage
 
-[![CI](https://github.com/eliezer-reuven/csv-salvage/actions/workflows/ci.yml/badge.svg)](https://github.com/eliezer-reuven/csv-salvage/actions/workflows/ci.yml)
-[![Publish](https://github.com/eliezer-reuven/csv-salvage/actions/workflows/publish.yml/badge.svg)](https://github.com/eliezer-reuven/csv-salvage/actions/workflows/publish.yml)
-[![codecov](https://codecov.io/gh/eliezer-reuven/csv-salvage/branch/main/graph/badge.svg)](https://codecov.io/gh/eliezer-reuven/csv-salvage)
+Read the full documentation at [csv-salvage.readthedocs.io](https://csv-salvage.readthedocs.io/).
+
+[![CI](https://github.com/ezer-mackenzie/csv-salvage/actions/workflows/ci.yml/badge.svg)](https://github.com/ezer-mackenzie/csv-salvage/actions/workflows/ci.yml)
+[![Publish](https://github.com/ezer-mackenzie/csv-salvage/actions/workflows/publish.yml/badge.svg)](https://github.com/ezer-mackenzie/csv-salvage/actions/workflows/publish.yml)
+[![codecov](https://codecov.io/gh/ezer-mackenzie/csv-salvage/branch/main/graph/badge.svg)](https://codecov.io/gh/ezer-mackenzie/csv-salvage)
 [![PyPI](https://img.shields.io/pypi/v/csv-salvage.svg)](https://pypi.org/project/csv-salvage/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE.md)
 [![Python Versions](https://img.shields.io/pypi/pyversions/csv-salvage.svg)](https://pypi.org/project/csv-salvage/)
@@ -139,16 +141,25 @@ println!("Successfully salvaged {} rows!", summary.salvaged_rows);
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, development commands, and coding guidelines.
 
-```bash
-# Clone and enter repo
-git clone https://github.com/eliezer-reuven/csv-salvage.git
-cd csv-salvage
+```powershell
+# Synchronize environment
+uv sync
 
-# Build & install locally in development mode
-maturin develop
+# Build & install locally in editable development mode
+uv run maturin develop --uv
 
-# Run tests
+# Run Rust unit tests
 cargo test
+
+# Run Python integration and release tests
+uv run python -m unittest discover -s tests -v
+
+# Check formatting and lints
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
+
+# Build documentation strictly
+uv run --group docs mkdocs build --strict
 ```
 
 ---
@@ -156,3 +167,4 @@ cargo test
 ## 📄 License
 
 Licensed under the [Apache License, Version 2.0](LICENSE.md).
+

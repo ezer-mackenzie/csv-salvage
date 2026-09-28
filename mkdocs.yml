@@ -1,0 +1,18 @@
+site_name: csv-salvage
+site_description: High-performance, fault-tolerant CSV salvage and reconstruction engine powered by Rust and PyO3.
+site_url: https://csv-salvage.readthedocs.io/
+repo_url: https://github.com/ezer-mackenzie/csv-salvage
+repo_name: ezer-mackenzie/csv-salvage
+
+theme:
+  name: readthedocs
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - API reference: api.md
+  - Architecture: architecture.md
+  - Support and heuristics: support.md
+  - Roadmap to 1.0: roadmap-1.0.md
+
+strict: true

@@ -39,39 +39,25 @@ If you have ideas for new repair heuristics, performance optimizations, or Pytho
 ## Local Development Setup
 
 ### Prerequisites
-- **Rust Toolchain:** Stable channel (1.80+ or 2024 edition compatible). Install via [rustup](https://rustup.rs/).
-- **Python:** 3.8 or newer.
-- **uv** (recommended) or **pip**:
-  ```bash
-  # Install uv (fast Python package manager)
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  # Or on Windows via PowerShell:
+- **Rust Toolchain:** 1.85.0 or newer. Install via [rustup](https://rustup.rs/).
+- **Python:** 3.9 through 3.14.
+- **uv:**
+  ```powershell
   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-  ```
-- **maturin:**
-  ```bash
-  pip install maturin
   ```
 
 ### Setting Up Your Environment
 
-```bash
+```powershell
 # 1. Clone your fork
-git clone https://github.com/<your-username>/csv-salvage.git
+git clone https://github.com/ezer-mackenzie/csv-salvage.git
 cd csv-salvage
 
-# 2. Create and activate a virtual environment
-uv venv
-# On Linux/macOS:
-source .venv/bin/activate
-# On Windows:
-.venv\Scripts\activate
+# 2. Synchronize virtual environment with all dependency groups
+uv sync --all-groups
 
-# 3. Install development dependencies
-pip install maturin pytest ruff
-
-# 4. Compile and install in development mode (links the Rust extension into Python)
-maturin develop
+# 3. Compile and install in editable development mode
+uv run maturin develop --uv
 ```
 
 ---
@@ -81,7 +67,7 @@ maturin develop
 Before committing, run the following checks:
 
 ### Rust Checks
-```bash
+```powershell
 # Format code
 cargo fmt --all -- --check
 
@@ -92,14 +78,13 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --verbose
 ```
 
-### Python Checks
-```bash
-# Lint and format check with Ruff
-ruff check .
-ruff format --check .
+### Python & Release Checks
+```powershell
+# Run all unit and integration tests
+uv run python -m unittest discover -s tests -v
 
-# Run Python tests (once test suite is populated)
-pytest
+# Validate documentation build
+uv run --group docs mkdocs build --strict
 ```
 
 ---
