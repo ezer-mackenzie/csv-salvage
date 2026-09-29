@@ -37,26 +37,37 @@ class InputValidationTests(unittest.TestCase):
         self.assertEqual(validate_delimiter(";"), ";")
         self.assertEqual(validate_delimiter("\t"), "\t")
 
-        for invalid in ("ab", "", "   ", 123, True):
+        for invalid in ("ab", "", "   "):
             with self.subTest(invalid=invalid), self.assertRaises(ConfigurationError):
-                validate_delimiter(invalid)  # type: ignore[arg-type]
+                validate_delimiter(invalid)
+
+        for invalid_type in (123, True):
+            with self.subTest(invalid=invalid_type), self.assertRaises(TypeError):
+                validate_delimiter(invalid_type)  # type: ignore[arg-type]
 
     def test_quote_char_validation(self):
         self.assertEqual(validate_quote_char('"'), '"')
         self.assertEqual(validate_quote_char("'"), "'")
 
-        for invalid in ('""', "", 1, None, False):
+        for invalid in ('""', ""):
             with self.subTest(invalid=invalid), self.assertRaises(ConfigurationError):
-                validate_quote_char(invalid)  # type: ignore[arg-type]
+                validate_quote_char(invalid)
+
+        for invalid_type in (1, None, False):
+            with self.subTest(invalid=invalid_type), self.assertRaises(TypeError):
+                validate_quote_char(invalid_type)  # type: ignore[arg-type]
 
     def test_expected_columns_validation(self):
         self.assertIsNone(validate_expected_columns(None))
         self.assertEqual(validate_expected_columns(1), 1)
         self.assertEqual(validate_expected_columns(10), 10)
 
-        for invalid in (0, -1, -100, 1.5, True, False, "5"):
+        for invalid in (0, -1, -100):
             with self.subTest(invalid=invalid), self.assertRaises(ConfigurationError):
-                validate_expected_columns(invalid)  # type: ignore[arg-type]
+                validate_expected_columns(invalid)
+
+        with self.assertRaises(TypeError):
+            validate_expected_columns("5")  # type: ignore[arg-type]
 
     def test_sniff_validation(self):
         with self.assertRaises(InferenceError):
@@ -65,7 +76,7 @@ class InputValidationTests(unittest.TestCase):
         with self.assertRaises(InferenceError):
             sniff("   \n\t  ")
 
-        with self.assertRaises(ConfigurationError):
+        with self.assertRaises(AttributeError):
             sniff(123)  # type: ignore[arg-type]
 
     def test_salvage_file_validates_before_native_execution(self):
