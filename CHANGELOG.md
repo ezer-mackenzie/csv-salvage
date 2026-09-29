@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `csv_salvage.salvage_file(...)` returning a detailed `SalvageSummary`.
   - `csv_salvage.sniff(...)` for standalone delimiter detection.
   - `csv_salvage.SalvageReader(...)` streaming iterator.
+- Benchmarking suite powered by `benchcore` (`tools/benchmark.py`) for measuring delimiter sniffing, streaming iterator throughput, and end-to-end file salvage performance.
 - Initial project scaffolding using Rust 2024 edition, PyO3, and Maturin.
 - Multi-platform CI pipeline (`.github/workflows/ci.yml`) covering Rust formatting (`cargo fmt`), Clippy linting, unit testing, Codecov integration, and multi-OS smoke builds.
 - Automated release workflow (`.github/workflows/publish.yml`) triggered on tags (`v*`) with CI-status verification, multi-platform wheel generation (Linux glibc & musl, Windows, macOS, and sdist), build provenance attestations, PyPI publishing, and GitHub Releases.
