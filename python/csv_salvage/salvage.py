@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 from . import _csv_salvage_backend
-from .errors import ConfigurationError, CorruptedFileError, InferenceError, SalvageError
+from .errors import CorruptedFileError, InferenceError
 from .reader import SalvageReader
 from .validation import (
     validate_delimiter,
@@ -22,12 +21,12 @@ SalvageSummary = _csv_salvage_backend.SalvageSummary
 def salvage_file(
     input_path: str | Path,
     output_path: str | Path,
-    quarantine_path: Optional[str | Path] = None,
-    delimiter: Optional[str] = None,
+    quarantine_path: str | Path | None = None,
+    delimiter: str | None = None,
     quote_char: str = '"',
     fill_ragged_rows: bool = True,
     merge_overflow: bool = True,
-    expected_columns: Optional[int] = None,
+    expected_columns: int | None = None,
     repair_quotes: bool = True,
 ) -> _csv_salvage_backend.SalvageSummary:
     """Salvage a corrupted CSV file and write a clean, standard RFC-4180 file.
@@ -78,8 +77,6 @@ def sniff(sample: str) -> str:
     Returns:
         Detected single-character delimiter (e.g. ',', ';', '\\t', '|').
     """
-    if not isinstance(sample, str):
-        raise ConfigurationError(f"Sample must be a string, got {type(sample).__name__}")
     if not sample.strip():
         raise InferenceError("Cannot sniff delimiter from an empty sample.")
 
@@ -91,11 +88,11 @@ def sniff(sample: str) -> str:
 
 def open(
     file_path: str | Path,
-    delimiter: Optional[str] = None,
+    delimiter: str | None = None,
     quote_char: str = '"',
     fill_ragged_rows: bool = True,
     merge_overflow: bool = True,
-    expected_columns: Optional[int] = None,
+    expected_columns: int | None = None,
     repair_quotes: bool = True,
 ) -> SalvageReader:
     """Open and stream records from a corrupted CSV file.

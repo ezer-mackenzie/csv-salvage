@@ -1,11 +1,18 @@
 """Streaming reader for salvaged CSV records."""
 from __future__ import annotations
 
+import sys
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator, List, Optional
+from types import TracebackType
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from . import _csv_salvage_backend
-from .errors import CorruptedFileError, SalvageError
+from .errors import CorruptedFileError
 from .validation import (
     validate_delimiter,
     validate_expected_columns,
@@ -20,11 +27,11 @@ class SalvageReader:
     def __init__(
         self,
         file_path: str | Path,
-        delimiter: Optional[str] = None,
+        delimiter: str | None = None,
         quote_char: str = '"',
         fill_ragged_rows: bool = True,
         merge_overflow: bool = True,
-        expected_columns: Optional[int] = None,
+        expected_columns: int | None = None,
         repair_quotes: bool = True,
     ) -> None:
         path = validate_input_path(file_path)
@@ -50,20 +57,25 @@ class SalvageReader:
         """Return the salvage summary statistics."""
         return self._backend_reader.summary
 
-    def __iter__(self) -> Iterator[List[str]]:
+    def __iter__(self) -> Iterator[list[str]]:
         return iter(self._backend_reader)
 
-    def __next__(self) -> List[str]:
+    def __next__(self) -> list[str]:
         return next(self._backend_reader)
 
     def __len__(self) -> int:
         return len(self._backend_reader)
 
-    def __enter__(self) -> SalvageReader:
+    def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
-        return False
+    def __exit__(
+        self,
+        _exc_type: type[BaseException] | None,
+        _exc_val: BaseException | None,
+        _exc_tb: TracebackType | None,
+    ) -> None:
+        return None
 
     def __repr__(self) -> str:
         return f"<SalvageReader rows={len(self)} summary={self.summary!r}>"

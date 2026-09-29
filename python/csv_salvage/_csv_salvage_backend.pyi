@@ -1,4 +1,12 @@
-from typing import Any, Dict, Iterator, List, Optional
+import sys
+from collections.abc import Iterator
+from types import TracebackType
+from typing import Any
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 class SalvageSummary:
     total_rows: int
@@ -8,7 +16,7 @@ class SalvageSummary:
     detected_delimiter: str
     inferred_columns: int
 
-    def to_dict(self) -> Dict[str, Any]: ...
+    def to_dict(self) -> dict[str, Any]: ...
 
 class SalvageReader:
     summary: SalvageSummary
@@ -16,33 +24,33 @@ class SalvageReader:
     def __init__(
         self,
         file_path: str,
-        delimiter: Optional[str] = None,
+        delimiter: str | None = None,
         quote_char: str = '"',
         fill_ragged_rows: bool = True,
         merge_overflow: bool = True,
-        expected_columns: Optional[int] = None,
+        expected_columns: int | None = None,
         repair_quotes: bool = True,
     ) -> None: ...
-    def __iter__(self) -> Iterator[List[str]]: ...
-    def __next__(self) -> List[str]: ...
+    def __iter__(self) -> Iterator[list[str]]: ...
+    def __next__(self) -> list[str]: ...
     def __len__(self) -> int: ...
-    def __enter__(self) -> SalvageReader: ...
+    def __enter__(self) -> Self: ...
     def __exit__(
         self,
-        exc_type: Optional[type],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[Any],
+        _exc_type: type[BaseException] | None,
+        _exc_val: BaseException | None,
+        _exc_tb: TracebackType | None,
     ) -> bool: ...
 
 def salvage_file(
     input_path: str,
     output_path: str,
-    quarantine_path: Optional[str] = None,
-    delimiter: Optional[str] = None,
+    quarantine_path: str | None = None,
+    delimiter: str | None = None,
     quote_char: str = '"',
     fill_ragged_rows: bool = True,
     merge_overflow: bool = True,
-    expected_columns: Optional[int] = None,
+    expected_columns: int | None = None,
     repair_quotes: bool = True,
 ) -> SalvageSummary: ...
 
@@ -50,10 +58,10 @@ def sniff(sample: str) -> str: ...
 
 def open(
     file_path: str,
-    delimiter: Optional[str] = None,
+    delimiter: str | None = None,
     quote_char: str = '"',
     fill_ragged_rows: bool = True,
     merge_overflow: bool = True,
-    expected_columns: Optional[int] = None,
+    expected_columns: int | None = None,
     repair_quotes: bool = True,
 ) -> SalvageReader: ...
