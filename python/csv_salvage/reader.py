@@ -9,7 +9,10 @@ from types import TracebackType
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
-    from typing_extensions import Self
+    try:
+        from typing_extensions import Self
+    except ImportError:  # pragma: no cover
+        Self = object  # type: ignore[assignment,misc]
 
 from . import _csv_salvage_backend
 from .errors import CorruptedFileError

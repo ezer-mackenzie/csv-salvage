@@ -1,23 +1,26 @@
 name: Release
 
 on:
+  push:
+    tags:
+      - "v*"
   release:
     types: [published]
   workflow_dispatch:
     inputs:
       tag:
         description: "Release tag to build and publish, for example v0.1.0"
-        required: true
+        required: false
         type: string
       publish:
         description: "Publish to PyPI after validation (disable for a rehearsal)"
-        required: true
+        required: false
         type: boolean
         default: true
 
-# Serialize manual and release-triggered publication of the same version.
+# Serialize manual, tag-triggered, and release-triggered publication of the same version.
 concurrency:
-  group: release-${{ github.event.release.tag_name || inputs.tag }}
+  group: release-${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
 permissions:
@@ -199,12 +202,13 @@ jobs:
       - name: Test native crate
         run: |
           $env:PYO3_PYTHON = python -c "import sys; print(sys.executable)"
-          cargo test --locked --target ${{ matrix.rust_target }}
+          cargo test --locked --target ${{ matrix.rust_target }} --no-default-features
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Validate wheel contents
         run: python tools/validate_distribution.py dist
       - name: Test installed Windows wheel
         run: |
+          python -m pip install "typing-extensions>=4.0"
           python -m pip install --force-reinstall --no-deps --no-index --find-links dist csv_salvage
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -m unittest discover -s tests -v
@@ -276,6 +280,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python tools/validate_distribution.py rebuilt
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m pip install "typing-extensions>=4.0"
           python -m pip install --force-reinstall --no-deps --no-index --find-links rebuilt csv_salvage
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -m unittest discover -s tests -v
@@ -286,7 +291,7 @@ jobs:
           path: dist
 
   publish:
-    if: github.event_name == 'release' || inputs.publish
+    if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v') || inputs.publish
     runs-on: ubuntu-latest
     needs: [linux, musllinux, windows, macos, sdist]
     environment:
@@ -294,8 +299,16 @@ jobs:
       url: https://pypi.org/p/csv-salvage
     permissions:
       id-token: write
+      contents: write
     steps:
       - uses: actions/download-artifact@v7
       - uses: astral-sh/setup-uv@v7
       - name: Publish to PyPI
         run: uv publish --trusted-publishing always --check-url https://pypi.org/simple/ "wheels-*/*"
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
+        with:
+          tag_name: ${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+          files: wheels-*/*
+          generate_release_notes: true
