@@ -13,6 +13,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive benchmark suite comparing performance against Python regex scripts, standard `csv`, `clevercsv`, and `pandas`.
 - CLI tool (`csv-salvage fix input.csv --output clean.csv`).
 
+## [0.2.0] - 2026-10-01
+
+### Changed
+- Streamlined CI pipeline (`.github/workflows/ci.yml`) by delegating the multi-platform wheel matrix build strictly to release publishing, keeping CI fast (< 2 min) for all pushes and pull requests.
+- Moved `extension-module` into an optional Cargo feature in `Cargo.toml` to support pure Rust test compilation without linking against Python shared libraries.
+
+### Fixed
+- Resolved macOS test linking errors by passing `--no-default-features` and dynamic lookup linker flags during CI test runs.
+- Resolved `typing_extensions` import failure on Python 3.9/3.10 during isolated wheel verification by adding graceful fallback handling in `reader.py`.
+- Fixed refspec resolution bug in `publish.yml` during git tag push events.
+- Integrated automated GitHub Release asset upload and release notes generation using `softprops/action-gh-release@v2`.
+
 ## [0.1.0] - 2026-09-25
 
 ### Added
