@@ -35,7 +35,7 @@ Issues = "https://github.com/ezer-mackenzie/csv-salvage/issues"
 Changelog = "https://github.com/ezer-mackenzie/csv-salvage/blob/main/CHANGELOG.md"
 
 [dependency-groups]
-release = ["twine>=6.1,<7.0"]
+release = ["twine>=6.1,<8.0"]
 docs = [
     "mkdocs>=1.6,<2.0",
 ]
