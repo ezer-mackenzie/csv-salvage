@@ -3,9 +3,12 @@
 use crate::error::SalvageError;
 use crate::heuristics::{infer_column_count, sniff_delimiter};
 use crate::parser::{Dialect, ResilientParser};
+use rayon::prelude::*;
 use std::fs::File;
 use std::io::{BufWriter, Read, Write};
 use std::path::Path;
+
+const PARALLEL_NORMALIZATION_THRESHOLD: usize = 1024;
 
 #[derive(Debug, Clone)]
 pub struct SalvageOptions {
@@ -47,6 +50,47 @@ pub struct QuarantineRecord {
     pub line_number: usize,
     pub raw_tokens: Vec<String>,
     pub reason: String,
+}
+
+enum RowOutcome {
+    Salvaged(Vec<String>, bool),
+    Quarantined(QuarantineRecord),
+}
+
+fn normalize_row(
+    mut row: Vec<String>,
+    line_number: usize,
+    expected_columns: usize,
+    delimiter: u8,
+    fill_ragged_rows: bool,
+    merge_overflow: bool,
+) -> RowOutcome {
+    if expected_columns == 0 || row.len() == expected_columns {
+        return RowOutcome::Salvaged(row, false);
+    }
+
+    if row.len() < expected_columns {
+        if fill_ragged_rows {
+            row.resize(expected_columns, String::new());
+            RowOutcome::Salvaged(row, true)
+        } else {
+            RowOutcome::Quarantined(QuarantineRecord {
+                line_number,
+                raw_tokens: row,
+                reason: format!("Row has too few columns (expected {})", expected_columns),
+            })
+        }
+    } else if merge_overflow {
+        let overflow = row.split_off(expected_columns - 1);
+        row.push(overflow.join(&(delimiter as char).to_string()));
+        RowOutcome::Salvaged(row, true)
+    } else {
+        RowOutcome::Quarantined(QuarantineRecord {
+            line_number,
+            raw_tokens: row,
+            reason: format!("Row has extra columns (expected {})", expected_columns),
+        })
+    }
 }
 
 /// Replaces / escapes fields to conform to standard RFC-4180 CSV output.
@@ -114,50 +158,41 @@ pub fn salvage_slice(
     };
 
     let mut parser = ResilientParser::new(input, dialect);
-    let mut salvaged = Vec::new();
+    let mut parsed_rows = Vec::new();
+    loop {
+        let line_number = parser.current_line();
+        match parser.next_row() {
+            Some(row) => parsed_rows.push((line_number, row)),
+            None => break,
+        }
+    }
+    let total_rows = parsed_rows.len();
+    let normalize = |(line_number, row)| {
+        normalize_row(
+            row,
+            line_number,
+            expected_cols,
+            delimiter,
+            options.fill_ragged_rows,
+            options.merge_overflow,
+        )
+    };
+    let outcomes: Vec<RowOutcome> = if total_rows >= PARALLEL_NORMALIZATION_THRESHOLD {
+        parsed_rows.into_par_iter().map(normalize).collect()
+    } else {
+        parsed_rows.into_iter().map(normalize).collect()
+    };
+
+    let mut salvaged = Vec::with_capacity(total_rows);
     let mut quarantine = Vec::new();
-    let mut total_rows = 0;
     let mut repaired_rows = 0;
-
-    while let Some(mut row) = parser.next_row() {
-        total_rows += 1;
-        let line_num = parser.current_line();
-
-        // Check if row has ragged column issues
-        if expected_cols > 0 && row.len() != expected_cols {
-            if row.len() < expected_cols {
-                if options.fill_ragged_rows {
-                    // Pad missing columns with empty string
-                    while row.len() < expected_cols {
-                        row.push(String::new());
-                    }
-                    repaired_rows += 1;
-                    salvaged.push(row);
-                } else {
-                    quarantine.push(QuarantineRecord {
-                        line_number: line_num,
-                        raw_tokens: row,
-                        reason: format!("Row has too few columns (expected {})", expected_cols),
-                    });
-                }
-            } else if row.len() > expected_cols {
-                if options.merge_overflow {
-                    // Merge extra columns into the last column
-                    let overflow = row.split_off(expected_cols - 1);
-                    let merged = overflow.join(&String::from(delimiter as char));
-                    row.push(merged);
-                    repaired_rows += 1;
-                    salvaged.push(row);
-                } else {
-                    quarantine.push(QuarantineRecord {
-                        line_number: line_num,
-                        raw_tokens: row,
-                        reason: format!("Row has extra columns (expected {})", expected_cols),
-                    });
-                }
+    for outcome in outcomes {
+        match outcome {
+            RowOutcome::Salvaged(row, repaired) => {
+                repaired_rows += usize::from(repaired);
+                salvaged.push(row);
             }
-        } else {
-            salvaged.push(row);
+            RowOutcome::Quarantined(record) => quarantine.push(record),
         }
     }
 
@@ -249,5 +284,52 @@ mod tests {
         assert_eq!(salvaged[2], vec!["2", "Keyboard", ""]);
         // Row 4: Merged overflow row
         assert_eq!(salvaged[3], vec!["3", "Mouse", "12.50,Extra,Data"]);
+    }
+
+    #[test]
+    fn test_parallel_normalization_preserves_row_order_and_source_lines() {
+        let mut data = String::from("id,name,role\n");
+        for index in 0..PARALLEL_NORMALIZATION_THRESHOLD {
+            if index == 10 {
+                data.push_str("10,\"person\ncontinued\",role\n");
+            } else {
+                data.push_str(&format!("{index},person,role\n"));
+            }
+        }
+        data.push_str("short,row\n");
+        data.push_str("too,many,columns,here\n");
+
+        let options = SalvageOptions {
+            delimiter: Some(b','),
+            expected_columns: Some(3),
+            fill_ragged_rows: false,
+            merge_overflow: false,
+            ..Default::default()
+        };
+
+        let (salvaged, quarantine, summary) = salvage_slice(data.as_bytes(), &options);
+
+        assert_eq!(summary.total_rows, PARALLEL_NORMALIZATION_THRESHOLD + 3);
+        assert_eq!(summary.salvaged_rows, PARALLEL_NORMALIZATION_THRESHOLD + 1);
+        assert_eq!(summary.quarantined_rows, 2);
+        assert_eq!(salvaged[1], vec!["0", "person", "role"]);
+        assert_eq!(
+            salvaged.last().unwrap(),
+            &vec![
+                (PARALLEL_NORMALIZATION_THRESHOLD - 1).to_string(),
+                "person".to_string(),
+                "role".to_string()
+            ]
+        );
+        assert_eq!(
+            quarantine
+                .iter()
+                .map(|record| record.line_number)
+                .collect::<Vec<_>>(),
+            vec![
+                PARALLEL_NORMALIZATION_THRESHOLD + 3,
+                PARALLEL_NORMALIZATION_THRESHOLD + 4
+            ]
+        );
     }
 }

@@ -33,7 +33,7 @@ Today, data engineers and analysts resort to writing **slow, brittle Python regu
 
 * **DFA & State-Machine Parser:** Custom finite state automaton (DFA via manual state machine or `regex-automata`) engineered specifically for error-recovery, token resynchronization, and zero-panic resilience.
 * **Schema Inference Heuristics:** Adaptive detection of expected column counts, delimiters, and dialect conventions even in chaotic files.
-* **Parallel Normalization with Rayon:** Multi-threaded chunking and parallel repair using `rayon` to saturate multi-core CPUs during large batch salvage.
+* **Parallel Row Normalization:** Parsed rows are normalized with Rayon in parallel for larger inputs (1,024 or more rows); quote-aware parsing remains sequential to preserve multiline CSV boundaries.
 
 ---
 
@@ -43,10 +43,10 @@ Today, data engineers and analysts resort to writing **slow, brittle Python regu
    * The parser **never crashes**.
    * Automatically repairs orphan quotes and equalizes ragged rows.
    * If a row is mathematically unrecoverable, it cleanly routes the corrupted record into a dedicated **discard / quarantine stream** (with line numbers and diagnostic reasons) rather than halting execution.
-2. **High-Throughput Parallel Normalization:**
-   * Utilizes `rayon` to repair and normalize large files in parallel.
+2. **Parallel Batch Normalization:**
+   * Uses `rayon` to normalize large batches of parsed rows in parallel while preserving row order.
    * Exports directly to cleaned, RFC-4180-compliant CSV files ready for instant loading into DuckDB, Polars, or Pandas.
-   * Streams repaired dictionaries or tuples directly into Python at native C/Rust speed.
+   * Provides a Python iterator for salvaged rows.
 
 ---
 
@@ -77,8 +77,7 @@ summary = cs.salvage_file(
     output_path="clean_data.csv",
     quarantine_path="discarded_rows.log",
     repair_quotes=True,       # Auto-fix orphan/unbalanced quotes
-    fill_ragged_rows=True,    # Pad short rows with nulls
-    threads=8                 # Parallel normalization via Rayon
+    fill_ragged_rows=True,    # Pad short rows with empty strings
 )
 
 print(f"Total Rows:     {summary.total_rows}")
@@ -95,28 +94,25 @@ df = duckdb.read_csv("clean_data.csv")
 ```python
 import csv_salvage as cs
 
-# Stream cleaned rows directly as Python tuples/dicts at native speed
-with cs.open("broken_records.csv", mode="lifesaver") as stream:
+# Iterate over salvaged rows
+with cs.open("broken_records.csv") as stream:
     for record in stream:
-        # record is a clean list of string tokens
         process_row(record)
-        
-    for discarded in stream.quarantine:
-        print(f"Line {discarded.line_number}: {discarded.raw_line} -> {discarded.reason}")
 ```
 
-### 3. Rust Crate Usage
+### 3. Rust Library Usage
 
 ```rust
-use csv_salvage::{SalvageEngine, SalvageOptions};
+use csv_salvage::{SalvageOptions, rust_salvage_file};
 
-let options = SalvageOptions::builder()
-    .repair_quotes(true)
-    .fill_ragged_rows(true)
-    .build();
+let options = SalvageOptions::default();
 
-let engine = SalvageEngine::new(options);
-let summary = engine.salvage_file_parallel("corrupted.csv", "clean.csv", Some("quarantine.csv"))?;
+let summary = rust_salvage_file(
+    "corrupted.csv",
+    "clean.csv",
+    Some("quarantine.csv"),
+    &options,
+)?;
 
 println!("Successfully salvaged {} rows!", summary.salvaged_rows);
 ```
@@ -125,15 +121,11 @@ println!("Successfully salvaged {} rows!", summary.salvaged_rows);
 
 ## 🗺️ Roadmap
 
-- [x] Initial scaffolding (Rust 2024 edition, PyO3, Maturin).
-- [x] Multi-platform CI pipeline with formatting, clippy, unit testing, and Codecov.
-- [x] Automated tag-triggered release workflow (`publish.yml`) with build provenance attestations, PyPI publishing, and GitHub Releases.
-- [ ] Core DFA / state-machine salvage tokenizer.
-- [ ] Orphan quote repair and newline resynchronization heuristics.
-- [ ] Multi-threaded parallel file processing with `rayon`.
-- [ ] Discard / quarantine stream with diagnostic error logging.
-- [ ] Direct export to Apache Arrow format for zero-copy Polars / DuckDB handoff.
-- [ ] Benchmarks against Python regex scripts, standard `csv`, and `clevercsv`.
+- [x] v0.1: resilient parser, dialect inference, row repair, and Python bindings.
+- [x] v0.2: release automation and cross-platform CI.
+- [x] v0.3: parallel normalization of large row sets and accelerated quote lookahead.
+- [ ] v0.4: optional Arrow integration and a dedicated CLI.
+- [ ] v1.0: benchmark suite, stable API/support contract, and production-readiness review.
 
 ---
 
@@ -167,4 +159,3 @@ uv run --group docs mkdocs build --strict
 ## 📄 License
 
 Licensed under the [Apache License, Version 2.0](LICENSE.md).
-

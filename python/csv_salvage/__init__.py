@@ -3,6 +3,7 @@
 Rescues corrupted, broken, and malformed CSV files where strict parsers
 (Polars, DuckDB, Pandas) abort with ParserError.
 """
+
 from __future__ import annotations
 
 from .errors import (
@@ -19,7 +20,7 @@ from .salvage import (
     sniff,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "ConfigurationError",

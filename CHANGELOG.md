@@ -8,10 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Parallel multi-threaded file normalization and chunking engine using `rayon`.
 - Direct zero-copy export to Apache Arrow RecordBatches for DuckDB and Polars integration.
 - Comprehensive benchmark suite comparing performance against Python regex scripts, standard `csv`, `clevercsv`, and `pandas`.
 - CLI tool (`csv-salvage fix input.csv --output clean.csv`).
+
+## [0.3.0] - 2026-10-19
+
+### Added
+- Parallel row normalization with Rayon for inputs containing at least 1,024 parsed rows, preserving output order.
+- SIMD-accelerated byte searching with `memchr` while looking ahead for quote-closing candidates.
+
+### Fixed
+- Quarantine diagnostics now report each record's starting source line, including rows following embedded newlines.
 
 ## [0.2.0] - 2026-10-01
 

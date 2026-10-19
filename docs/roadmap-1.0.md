@@ -4,7 +4,7 @@ This document outlines the milestones and roadmap leading to the 1.0 production 
 
 ---
 
-## v0.1.0 (Current)
+## v0.1.0
 
 - [x] Initial Rust DFA state-machine tokenizer.
 - [x] Disambiguation of unescaped and stray quotes.
@@ -16,17 +16,22 @@ This document outlines the milestones and roadmap leading to the 1.0 production 
 
 ---
 
-## v0.2.0 (Parallelism & Performance)
+## v0.2.0 (Published)
 
-- [ ] Multi-threaded parallel chunk parsing using `rayon`.
-- [ ] SIMD-accelerated delimiter and newline scanning (`memchr`).
+- [x] Core parser, inference, normalization, PyO3 bindings, and release automation.
+
+The parallel processing and large-file I/O items planned for this version were not
+included in the published `v0.2.0`; they are tracked in the next milestone.
+
+## v0.3.0 (Performance)
+
+- [x] Parallel row normalization using `rayon` for inputs with at least 1,024 parsed rows.
+- [x] `memchr`-accelerated lookahead for quote-closing candidates.
 - [ ] Memory-mapped file I/O for multi-gigabyte dataset salvage.
 
----
+## v0.4.0 (Ecosystem Integrations)
 
-## v0.3.0 (Ecosystem Integrations)
-
-- [ ] Direct Arrow RecordBatch export for zero-copy DuckDB and Polars ingestion:
+- [ ] Direct Arrow RecordBatch export for DuckDB and Polars ingestion:
   ```python
   df = cs.read_polars("corrupt.csv")
   ```

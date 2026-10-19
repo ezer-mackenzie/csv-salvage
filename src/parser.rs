@@ -3,6 +3,8 @@
 //! Designed to recover from unescaped quotes, trailing characters,
 //! and ragged rows where standard parsers fail.
 
+use memchr::{memchr, memchr2};
+
 #[derive(Debug, Clone)]
 pub struct Dialect {
     pub delimiter: u8,
@@ -239,24 +241,24 @@ impl<'a> ResilientParser<'a> {
     }
 
     fn has_later_closing_quote_on_line(&self, start: usize) -> bool {
-        let mut i = start;
-        while i < self.input.len() && self.input[i] != b'\n' && self.input[i] != b'\r' {
-            if self.input[i] == self.dialect.quote_char {
-                let mut after = i + 1;
-                while after < self.input.len()
-                    && (self.input[after] == b' ' || self.input[after] == b'\t')
-                {
-                    after += 1;
-                }
-                if after >= self.input.len()
-                    || self.input[after] == self.dialect.delimiter
-                    || self.input[after] == b'\r'
-                    || self.input[after] == b'\n'
-                {
-                    return true;
-                }
+        let line_end =
+            start + memchr2(b'\n', b'\r', &self.input[start..]).unwrap_or(self.input.len() - start);
+        let mut search_from = start;
+        while let Some(offset) = memchr(self.dialect.quote_char, &self.input[search_from..line_end])
+        {
+            let quote_pos = search_from + offset;
+            let mut after = quote_pos + 1;
+            while after < line_end && (self.input[after] == b' ' || self.input[after] == b'\t') {
+                after += 1;
             }
-            i += 1;
+            if after == line_end
+                || self.input[after] == self.dialect.delimiter
+                || self.input[after] == b'\r'
+                || self.input[after] == b'\n'
+            {
+                return true;
+            }
+            search_from = quote_pos + 1;
         }
         false
     }

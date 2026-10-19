@@ -64,7 +64,7 @@ Contains metadata and statistics about the salvage operation:
 
 - **`total_rows`** (`int`): Total count of rows processed.
 - **`salvaged_rows`** (`int`): Count of successfully salvaged rows.
-- **`repaired_rows`** (`int`): Count of rows requiring modifications (padding, merging, quote repair).
+- **`repaired_rows`** (`int`): Count of rows modified by ragged-row padding or overflow merging.
 - **`quarantined_rows`** (`int`): Count of unrecoverable rows routed to quarantine.
 - **`detected_delimiter`** (`str`): Delimiter inferred or configured.
 - **`inferred_columns`** (`int`): Column count inferred or configured.

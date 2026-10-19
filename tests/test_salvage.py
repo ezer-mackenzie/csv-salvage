@@ -12,8 +12,14 @@ class SalvageIntegrationTests(unittest.TestCase):
     def test_metadata(self):
         self.assertTrue(hasattr(cs, "__version__"))
         self.assertIsInstance(cs.__version__, str)
-        self.assertEqual(cs.__version__, "0.2.0")
-        for symbol in ("salvage_file", "sniff", "open", "SalvageReader", "SalvageSummary"):
+        self.assertEqual(cs.__version__, "0.3.0")
+        for symbol in (
+            "salvage_file",
+            "sniff",
+            "open",
+            "SalvageReader",
+            "SalvageSummary",
+        ):
             self.assertIn(symbol, cs.__all__)
 
     def test_sniff_delimiter(self):
@@ -28,9 +34,7 @@ class SalvageIntegrationTests(unittest.TestCase):
 
     def test_salvage_file_orphan_quotes(self):
         corrupted_data = (
-            'id,product,price\n'
-            '101,"15" Monitor",49.99\n'
-            '102,"Standard Widget",10.00\n'
+            'id,product,price\n101,"15" Monitor",49.99\n102,"Standard Widget",10.00\n'
         )
 
         with tempfile.TemporaryDirectory() as tmpdir:
