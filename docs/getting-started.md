@@ -16,6 +16,26 @@ uv add csv-salvage
 
 ## Basic Usage
 
+### Command-line interface
+
+Install the package, then repair a file from the terminal:
+
+```bash
+csv-salvage fix data/broken.csv --output data/clean.csv
+```
+
+Optionally specify a quarantine file and a fixed column count:
+
+```bash
+csv-salvage fix data/broken.csv \
+  --output data/clean.csv \
+  --quarantine data/quarantine.csv \
+  --expected-columns 5
+```
+
+Run `csv-salvage fix --help` to see all options. The same command is available
+as `python -m csv_salvage`.
+
 ### 1. Salvaging a Corrupted File
 
 The primary workflow uses `salvage_file()` to clean a file on disk and produce standard RFC-4180 output ready for Polars, DuckDB, or Pandas:

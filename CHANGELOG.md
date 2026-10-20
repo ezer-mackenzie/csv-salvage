@@ -8,9 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Direct zero-copy export to Apache Arrow RecordBatches for DuckDB and Polars integration.
+- Optional Arrow-compatible table export for DuckDB and Polars integration.
 - Comprehensive benchmark suite comparing performance against Python regex scripts, standard `csv`, `clevercsv`, and `pandas`.
-- CLI tool (`csv-salvage fix input.csv --output clean.csv`).
+
+## [0.4.0] - 2026-10-19
+
+### Added
+- `csv-salvage fix` command for repairing CSV files, configuring row normalization, and optionally writing quarantined rows.
+- `python -m csv_salvage` entry point for environments where the console script is unavailable.
 
 ## [0.3.0] - 2026-10-19
 

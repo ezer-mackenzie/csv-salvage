@@ -34,6 +34,9 @@ Repository = "https://github.com/ezer-mackenzie/csv-salvage"
 Issues = "https://github.com/ezer-mackenzie/csv-salvage/issues"
 Changelog = "https://github.com/ezer-mackenzie/csv-salvage/blob/main/CHANGELOG.md"
 
+[project.scripts]
+csv-salvage = "csv_salvage.cli:main"
+
 [dependency-groups]
 release = ["twine>=6.1,<7.0"]
 docs = [
@@ -53,5 +56,4 @@ include = [
     { path = "tests/*.py", format = "sdist" },
     { path = "tools/*.py", format = "sdist" },
 ]
-
 

@@ -29,13 +29,14 @@ included in the published `v0.2.0`; they are tracked in the next milestone.
 - [x] `memchr`-accelerated lookahead for quote-closing candidates.
 - [ ] Memory-mapped file I/O for multi-gigabyte dataset salvage.
 
-## v0.4.0 (Ecosystem Integrations)
+## v0.4.0 (CLI)
 
-- [ ] Direct Arrow RecordBatch export for DuckDB and Polars ingestion:
-  ```python
-  df = cs.read_polars("corrupt.csv")
-  ```
-- [ ] Dedicated command-line interface (`csv-salvage fix input.csv --out clean.csv`).
+- [x] CLI for repairing files, configuring repair options, and routing quarantine output.
+
+## v0.5.0 (Ecosystem Integrations)
+
+- [ ] Optional Arrow-compatible table export for DuckDB and Polars.
+- [ ] Define memory and copy semantics before making zero-copy performance claims.
 
 ---
 

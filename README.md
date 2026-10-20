@@ -100,7 +100,18 @@ with cs.open("broken_records.csv") as stream:
         process_row(record)
 ```
 
-### 3. Rust Library Usage
+### 3. Command-Line Usage
+
+```bash
+csv-salvage fix broken.csv --output clean.csv --quarantine discarded.csv
+```
+
+Use `--delimiter ';'` or `--expected-columns 5` to override inference. The
+`--no-fill-ragged-rows`, `--no-merge-overflow`, and `--no-repair-quotes` options
+disable the corresponding repairs. `python -m csv_salvage` provides the same
+interface.
+
+### 4. Rust Library Usage
 
 ```rust
 use csv_salvage::{SalvageOptions, rust_salvage_file};
@@ -124,7 +135,8 @@ println!("Successfully salvaged {} rows!", summary.salvaged_rows);
 - [x] v0.1: resilient parser, dialect inference, row repair, and Python bindings.
 - [x] v0.2: release automation and cross-platform CI.
 - [x] v0.3: parallel normalization of large row sets and accelerated quote lookahead.
-- [ ] v0.4: optional Arrow integration and a dedicated CLI.
+- [x] v0.4: CLI for file repair.
+- [ ] v0.5: optional Arrow-compatible integration.
 - [ ] v1.0: benchmark suite, stable API/support contract, and production-readiness review.
 
 ---
