@@ -12,6 +12,7 @@ from .errors import (
     InferenceError,
     SalvageError,
 )
+from .integrations import read_polars, read_pyarrow
 from .reader import SalvageReader
 from .salvage import (
     SalvageSummary,
@@ -20,7 +21,7 @@ from .salvage import (
     sniff,
 )
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
     "ConfigurationError",
@@ -31,6 +32,8 @@ __all__ = [
     "SalvageSummary",
     "__version__",
     "open",
+    "read_polars",
+    "read_pyarrow",
     "salvage_file",
     "sniff",
 ]

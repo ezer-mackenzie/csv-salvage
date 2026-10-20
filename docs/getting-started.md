@@ -36,6 +36,30 @@ csv-salvage fix data/broken.csv \
 Run `csv-salvage fix --help` to see all options. The same command is available
 as `python -m csv_salvage`.
 
+### Optional PyArrow and Polars integrations
+
+Install an adapter separately from the core package:
+
+```bash
+pip install "csv-salvage[arrow]"
+# or
+pip install "csv-salvage[polars]"
+```
+
+Then request a typed string table or DataFrame:
+
+```python
+import csv_salvage as cs
+
+table = cs.read_pyarrow("data/broken.csv", column_names=["id", "name"])
+frame = cs.read_polars("data/broken.csv", column_names=["id", "name"])
+```
+
+Column names are optional; when omitted, columns are named `column_1`,
+`column_2`, and so on. Both adapters materialize salvaged values and do not
+provide zero-copy parsing. Input headers remain rows in the result, just as
+they do when iterating with `cs.open()`. Rows routed to quarantine are omitted.
+
 ### 1. Salvaging a Corrupted File
 
 The primary workflow uses `salvage_file()` to clean a file on disk and produce standard RFC-4180 output ready for Polars, DuckDB, or Pandas:

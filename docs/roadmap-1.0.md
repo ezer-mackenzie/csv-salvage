@@ -27,7 +27,8 @@ included in the published `v0.2.0`; they are tracked in the next milestone.
 
 - [x] Parallel row normalization using `rayon` for inputs with at least 1,024 parsed rows.
 - [x] `memchr`-accelerated lookahead for quote-closing candidates.
-- [ ] Memory-mapped file I/O for multi-gigabyte dataset salvage.
+
+Memory-mapped file I/O was deferred to v0.6.0.
 
 ## v0.4.0 (CLI)
 
@@ -35,12 +36,17 @@ included in the published `v0.2.0`; they are tracked in the next milestone.
 
 ## v0.5.0 (Ecosystem Integrations)
 
-- [ ] Optional Arrow-compatible table export for DuckDB and Polars.
-- [ ] Define memory and copy semantics before making zero-copy performance claims.
+- [x] Optional PyArrow Table and Polars DataFrame APIs with separately installable dependencies.
+- [x] Define current materialization and copy behavior; no zero-copy parsing claim.
+
+## v0.6.0 (Scale and Validation)
+
+- [ ] Memory-mapped file I/O for multi-gigabyte dataset salvage.
+- [ ] Benchmark the native parser and integrations against representative alternatives.
 
 ---
 
 ## v1.0.0 (Production Hardening)
 
-- [ ] Zero-copy stream normalization benchmarks against CleverCSV and custom regex cleanups.
+- [ ] Benchmark suite against CleverCSV, Python csv, and representative cleanup scripts.
 - [ ] Support contract freezing and stable public API commitment.

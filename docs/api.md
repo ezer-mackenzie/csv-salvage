@@ -54,6 +54,43 @@ def open(
 
 Opens a corrupted CSV file for streaming row iteration in Python.
 
+### `read_pyarrow()` and `read_polars()`
+
+```python
+def read_pyarrow(
+    file_path: str | Path,
+    *,
+    column_names: Sequence[str] | None = None,
+    delimiter: str | None = None,
+    quote_char: str = '"',
+    fill_ragged_rows: bool = True,
+    merge_overflow: bool = True,
+    expected_columns: int | None = None,
+    repair_quotes: bool = True,
+) -> pyarrow.Table: ...
+
+def read_polars(
+    file_path: str | Path,
+    *,
+    column_names: Sequence[str] | None = None,
+    delimiter: str | None = None,
+    quote_char: str = '"',
+    fill_ragged_rows: bool = True,
+    merge_overflow: bool = True,
+    expected_columns: int | None = None,
+    repair_quotes: bool = True,
+) -> polars.DataFrame: ...
+```
+
+These adapters use the same parsing and normalization options as `open()`.
+Columns are strings. If `column_names` is omitted, they are named
+`column_1`, `column_2`, and so on. Install the adapters independently with
+`csv-salvage[arrow]` or `csv-salvage[polars]`. Both currently materialize rows
+in Python before building the result; zero-copy parsing is not supported. Input
+header rows remain data rows, as they do with `SalvageReader`; `column_names`
+only labels the output schema and does not change the inferred column count.
+Rows routed to quarantine by the normalization options are omitted.
+
 ---
 
 ## Classes

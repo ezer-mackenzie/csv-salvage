@@ -111,7 +111,29 @@ Use `--delimiter ';'` or `--expected-columns 5` to override inference. The
 disable the corresponding repairs. `python -m csv_salvage` provides the same
 interface.
 
-### 4. Rust Library Usage
+### 4. Optional PyArrow and Polars integrations
+
+Install only the adapter you need:
+
+```bash
+pip install "csv-salvage[arrow]"
+# or
+pip install "csv-salvage[polars]"
+```
+
+```python
+import csv_salvage as cs
+
+arrow_table = cs.read_pyarrow("broken.csv", column_names=["id", "name", "role"])
+polars_frame = cs.read_polars("broken.csv", column_names=["id", "name", "role"])
+```
+
+Both APIs eagerly materialize repaired rows as string columns; they do not
+provide zero-copy parsing. Input header rows remain data rows, matching
+`cs.open()`; `column_names` only labels the result columns. Rows quarantined by
+the normalization settings are omitted from the dataframe.
+
+### 5. Rust Library Usage
 
 ```rust
 use csv_salvage::{SalvageOptions, rust_salvage_file};

@@ -8,8 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Optional Arrow-compatible table export for DuckDB and Polars integration.
 - Comprehensive benchmark suite comparing performance against Python regex scripts, standard `csv`, `clevercsv`, and `pandas`.
+
+## [0.5.0] - 2026-10-19
+
+### Added
+- Optional `read_pyarrow()` and `read_polars()` adapters that return string-typed tables using separately installable extras.
+- Configurable output column names for Arrow and Polars results.
+
+### Changed
+- Document that dataframe integrations currently materialize parsed rows and do not promise zero-copy parsing.
 
 ## [0.4.0] - 2026-10-19
 

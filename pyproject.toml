@@ -37,6 +37,10 @@ Changelog = "https://github.com/ezer-mackenzie/csv-salvage/blob/main/CHANGELOG.m
 [project.scripts]
 csv-salvage = "csv_salvage.cli:main"
 
+[project.optional-dependencies]
+arrow = ["pyarrow>=14"]
+polars = ["polars>=1.0"]
+
 [dependency-groups]
 release = ["twine>=6.1,<7.0"]
 docs = [
@@ -56,4 +60,3 @@ include = [
     { path = "tests/*.py", format = "sdist" },
     { path = "tools/*.py", format = "sdist" },
 ]
-
