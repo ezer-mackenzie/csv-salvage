@@ -112,7 +112,14 @@ git commit -m "feat: add heuristic quote disambiguation for unescaped text"
 ## Release Process
 
 Releases are fully automated via GitHub Actions:
-- Pushing a semver tag matching `v*` (e.g. `v0.1.0`) triggers `.github/workflows/publish.yml`.
+- Pushing a semantic-version tag matching `v*` (e.g. `v1.0.0`) triggers `.github/workflows/publish.yml`.
+- Wheel and source-distribution builds wait for a successful CI run on the exact release commit.
+- Manual dispatch can build a release candidate; disabling its `publish` input prevents publication to PyPI.
 - Multi-platform wheels are built for Linux, macOS, and Windows.
 - Artifacts are attested with GitHub build provenance.
 - The release is published to PyPI and attached to a new GitHub Release with auto-generated release notes.
+
+The stable Python API for 1.x is limited to the names exported in
+`csv_salvage.__all__`. Keep the API contract tests up to date when adding
+compatible public functionality, and document deprecations before a future
+major-version removal.

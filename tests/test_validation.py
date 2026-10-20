@@ -103,7 +103,16 @@ class InputValidationTests(unittest.TestCase):
                 salvage_file(sample_file, out_file, delimiter="invalid_delim")
 
             with self.assertRaises(ConfigurationError):
+                salvage_file(sample_file, out_file, delimiter="é")
+
+            with self.assertRaises(ConfigurationError):
+                salvage_file(sample_file, out_file, delimiter='"', quote_char='"')
+
+            with self.assertRaises(ConfigurationError):
                 salvage_file(sample_file, out_file, expected_columns=-5)
+
+            with self.assertRaises(ConfigurationError):
+                salvage_file(sample_file, out_file, expected_columns=True)
 
     def test_open_validates_before_native_execution(self):
         with self.assertRaises(FileNotFoundError):
@@ -115,6 +124,9 @@ class InputValidationTests(unittest.TestCase):
 
             with self.assertRaises(ConfigurationError):
                 cs_open(sample_file, quote_char="invalid_quote")
+
+            with self.assertRaises(ConfigurationError):
+                cs_open(sample_file, quote_char="é")
 
 
 if __name__ == "__main__":

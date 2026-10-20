@@ -63,4 +63,6 @@ Memory-mapped file I/O was deferred to v0.6.0.
 
 ## v1.0.0 (Production Hardening)
 
-- [ ] Freeze the tested public API and commit to stable 1.x compatibility.
+- [x] Freeze the tested public API and commit to stable 1.x compatibility.
+- [x] Publish support and security policies aligned with the supported runtime.
+- [x] Gate release builds and publication on successful CI for the same commit.

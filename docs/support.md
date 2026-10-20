@@ -21,11 +21,12 @@
 ## Public API Stability
 
 The public Python API consists only of the names listed in
-`csv_salvage.__all__`. In version 0.x,
-minor releases may still change behavior or signatures. The project will
-freeze and support the documented API starting with 1.0.0. Private modules,
-the native backend, and Rust implementation details are not covered by the
-Python compatibility contract.
+`csv_salvage.__all__`. Starting with 1.0.0, public names, signatures, defaults,
+result fields, and documented exceptions are backward-compatible throughout
+1.x. Additions are allowed in minor releases; deprecations will be documented
+before removal in a future major release. Private modules, the native backend,
+and Rust implementation details are not covered by the Python compatibility
+contract.
 
 ---
 

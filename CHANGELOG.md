@@ -8,7 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Finalize the stable compatibility commitment and production support policy for 1.0.0.
+- Continue maintenance releases with bug fixes and compatible improvements.
+
+## [1.0.0] - 2026-10-20
+
+### Added
+- Stable 1.x compatibility commitment for documented public Python APIs.
+- CI coverage across every supported CPython minor version and release-build gating on successful CI for the exact source commit.
+
+### Changed
+- Mark package metadata as Production/Stable and align support/security policy with the 1.0 release.
 
 ## [0.9.0] - 2026-10-20
 

@@ -168,7 +168,7 @@ println!("Successfully salvaged {} rows!", summary.salvaged_rows);
 - [x] v0.7: optional comparisons with CleverCSV, pandas, and a constrained regex repair baseline.
 - [x] v0.8: public API contract, input option validation, and compatibility tests.
 - [x] v0.9: CI coverage for all supported CPython minor versions.
-- [ ] v1.0: benchmark suite, stable API/support contract, and production-readiness review.
+- [x] v1.0: benchmark suite, stable API/support contract, and production-readiness review.
 
 ---
 

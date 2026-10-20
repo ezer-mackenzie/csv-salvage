@@ -135,10 +135,11 @@ Defined in `csv_salvage.errors`:
 
 Only names exported by `csv_salvage.__all__` are public. Public function
 parameter names, defaults, result fields, and documented exception classes are
-covered by contract tests. Before 1.0.0, minor releases may still make
-incompatible changes. The stable compatibility commitment begins at 1.0.0;
-private modules, the `_csv_salvage_backend` extension, and internal Rust
-implementation details are excluded.
+covered by contract tests. Starting with 1.0.0, these public interfaces are
+backward-compatible throughout 1.x. New public APIs may be added in minor
+releases. Any deprecation will be documented before removal in a future major
+release. Private modules, the `_csv_salvage_backend` extension, and internal
+Rust implementation details are excluded.
 
 Delimiter and quote characters must each be one ASCII character, cannot be
 CR, LF, or NUL, and must differ from each other. `expected_columns` must be a
