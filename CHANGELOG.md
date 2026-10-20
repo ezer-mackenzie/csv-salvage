@@ -8,7 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Define the stable public API and support contract for v1.0.0.
+- Add full supported-Python-version CI coverage and finalize the 1.0 release contract.
+
+## [0.8.0] - 2026-10-20
+
+### Added
+- Contract tests locking public exports, callable parameter names/defaults, summary fields, and error inheritance.
+- Document the public API stability boundaries and supported CPython range.
+
+### Fixed
+- Reject non-ASCII and control characters as delimiters or quote characters, and reject identical delimiter/quote characters.
+- Reject booleans and non-integer values for `expected_columns`.
 
 ## [0.7.0] - 2026-10-20
 

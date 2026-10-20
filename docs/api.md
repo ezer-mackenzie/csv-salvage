@@ -130,3 +130,16 @@ Defined in `csv_salvage.errors`:
 - **`CorruptedFileError`**: Raised on unrecoverable file errors.
 - **`InferenceError`**: Raised when delimiter or column inference fails.
 - **`ConfigurationError`**: Raised on invalid parameters.
+
+## Compatibility contract
+
+Only names exported by `csv_salvage.__all__` are public. Public function
+parameter names, defaults, result fields, and documented exception classes are
+covered by contract tests. Before 1.0.0, minor releases may still make
+incompatible changes. The stable compatibility commitment begins at 1.0.0;
+private modules, the `_csv_salvage_backend` extension, and internal Rust
+implementation details are excluded.
+
+Delimiter and quote characters must each be one ASCII character, cannot be
+CR, LF, or NUL, and must differ from each other. `expected_columns` must be a
+positive integer; booleans and floats are rejected.

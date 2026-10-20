@@ -1,4 +1,5 @@
 """Core public salvage operations for csv-salvage."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -48,8 +49,8 @@ def salvage_file(
     in_path = validate_input_path(input_path)
     out_path = validate_output_path(output_path)
     quar_path = validate_quarantine_path(quarantine_path)
-    delim = validate_delimiter(delimiter)
     quote = validate_quote_char(quote_char)
+    delim = validate_delimiter(delimiter, quote)
     expected = validate_expected_columns(expected_columns)
 
     try:
@@ -65,7 +66,9 @@ def salvage_file(
             repair_quotes=repair_quotes,
         )
     except Exception as exc:
-        raise CorruptedFileError(f"Salvage operation failed on {in_path}: {exc}") from exc
+        raise CorruptedFileError(
+            f"Salvage operation failed on {in_path}: {exc}"
+        ) from exc
 
 
 def sniff(sample: str) -> str:

@@ -6,8 +6,8 @@ We take the security of `csv-salvage` seriously. The following table indicates w
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.1.x   | :white_check_mark: |
-| < 0.1.0 | :x:                |
+| 0.8.x   | :white_check_mark: |
+| < 0.8.0 | :x:                |
 
 ## Reporting a Vulnerability
 

@@ -8,16 +8,16 @@ from csv_salvage import (
     ConfigurationError,
     CorruptedFileError,
     InferenceError,
-    open as cs_open,
     salvage_file,
     sniff,
+)
+from csv_salvage import (
+    open as cs_open,
 )
 from csv_salvage.validation import (
     validate_delimiter,
     validate_expected_columns,
     validate_input_path,
-    validate_output_path,
-    validate_quarantine_path,
     validate_quote_char,
 )
 
@@ -27,9 +27,11 @@ class InputValidationTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             validate_input_path("non_existent_file_xyz_123.csv")
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with self.assertRaises(CorruptedFileError):
-                validate_input_path(tmpdir)
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            self.assertRaises(CorruptedFileError),
+        ):
+            validate_input_path(tmpdir)
 
     def test_delimiter_validation(self):
         self.assertIsNone(validate_delimiter(None))
@@ -40,6 +42,11 @@ class InputValidationTests(unittest.TestCase):
         for invalid in ("ab", "", "   "):
             with self.subTest(invalid=invalid), self.assertRaises(ConfigurationError):
                 validate_delimiter(invalid)
+        for invalid in ("é", "\n", "\r", "\x00"):
+            with self.subTest(invalid=invalid), self.assertRaises(ConfigurationError):
+                validate_delimiter(invalid)
+        with self.assertRaises(ConfigurationError):
+            validate_delimiter('"', '"')
 
         for invalid_type in (123, True):
             with self.subTest(invalid=invalid_type), self.assertRaises(TypeError):
@@ -52,6 +59,9 @@ class InputValidationTests(unittest.TestCase):
         for invalid in ('""', ""):
             with self.subTest(invalid=invalid), self.assertRaises(ConfigurationError):
                 validate_quote_char(invalid)
+        for invalid in ("é", "\n", "\r", "\x00"):
+            with self.subTest(invalid=invalid), self.assertRaises(ConfigurationError):
+                validate_quote_char(invalid)
 
         for invalid_type in (1, None, False):
             with self.subTest(invalid=invalid_type), self.assertRaises(TypeError):
@@ -62,12 +72,13 @@ class InputValidationTests(unittest.TestCase):
         self.assertEqual(validate_expected_columns(1), 1)
         self.assertEqual(validate_expected_columns(10), 10)
 
-        for invalid in (0, -1, -100):
+        for invalid in (0, -1, -100, True):
             with self.subTest(invalid=invalid), self.assertRaises(ConfigurationError):
                 validate_expected_columns(invalid)
 
-        with self.assertRaises(TypeError):
-            validate_expected_columns("5")  # type: ignore[arg-type]
+        for invalid in ("5", 1.5):
+            with self.subTest(invalid=invalid), self.assertRaises(ConfigurationError):
+                validate_expected_columns(invalid)  # type: ignore[arg-type]
 
     def test_sniff_validation(self):
         with self.assertRaises(InferenceError):

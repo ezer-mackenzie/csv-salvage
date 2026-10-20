@@ -10,12 +10,21 @@
 
 ### Python Compatibility
 
-- Standard CPython 3.9 through 3.14.
-- Compatible with PyPy 3.9+.
+- Supported: CPython 3.9 through 3.14.
+- PyPy is not part of the supported runtime or published-wheel contract.
 
 ### Rust MSRV
 
 - Minimum Supported Rust Version: **1.85.0**.
+
+## Public API Stability
+
+The public Python API consists only of the names listed in
+`csv_salvage.__all__`. In version 0.x,
+minor releases may still change behavior or signatures. The project will
+freeze and support the documented API starting with 1.0.0. Private modules,
+the native backend, and Rust implementation details are not covered by the
+Python compatibility contract.
 
 ---
 

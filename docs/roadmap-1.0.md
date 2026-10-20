@@ -49,8 +49,18 @@ Memory-mapped file I/O was deferred to v0.6.0.
 - [x] Optional, benchmark-only comparisons with CleverCSV and pandas.
 - [x] Include a constrained regex cleanup baseline and verify row counts before timing.
 
+## v0.8.0 (API Contract)
+
+- [x] Define public exports, signatures, defaults, and stability boundaries.
+- [x] Add contract tests and reject ambiguous byte-level parser options.
+
+## v0.9.0 (Compatibility Hardening)
+
+- [ ] Run tests across every supported CPython minor version in CI.
+- [ ] Align published support and security policy with tested runtimes.
+
 ---
 
 ## v1.0.0 (Production Hardening)
 
-- [ ] Support contract freezing and stable public API commitment.
+- [ ] Freeze the tested public API and commit to stable 1.x compatibility.

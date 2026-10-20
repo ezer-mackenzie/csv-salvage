@@ -1,4 +1,5 @@
 """Input validation for csv-salvage public API."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -28,21 +29,33 @@ def validate_quarantine_path(path: str | Path | None) -> Path | None:
     """Validate optional quarantine file destination path."""
     if path is None:
         return None
-    
+
     p = Path(path).resolve()
     if p.parent and not p.parent.exists():
         p.parent.mkdir(parents=True, exist_ok=True)
-        
+
     return p
 
 
-def validate_delimiter(delimiter: str | None) -> str | None:
+def validate_delimiter(
+    delimiter: str | None, quote_char: str | None = None
+) -> str | None:
     """Validate single-character delimiter if explicitly provided."""
     if delimiter is None:
         return None
 
     if len(delimiter) != 1:
-        raise ConfigurationError(f"Delimiter must be a single character, got {delimiter!r} (length {len(delimiter)})")
+        raise ConfigurationError(
+            f"Delimiter must be a single character, got {delimiter!r} (length {len(delimiter)})"
+        )
+    if not delimiter.isascii() or delimiter in "\r\n\x00":
+        raise ConfigurationError(
+            "Delimiter must be a single ASCII character other than CR, LF, or NUL"
+        )
+    if quote_char is not None and delimiter == quote_char:
+        raise ConfigurationError(
+            "Delimiter and quote_char must be different characters"
+        )
 
     return delimiter
 
@@ -50,7 +63,13 @@ def validate_delimiter(delimiter: str | None) -> str | None:
 def validate_quote_char(quote_char: str) -> str:
     """Validate single-character quote enclosure."""
     if len(quote_char) != 1:
-        raise ConfigurationError(f"quote_char must be a single character, got {quote_char!r} (length {len(quote_char)})")
+        raise ConfigurationError(
+            f"quote_char must be a single character, got {quote_char!r} (length {len(quote_char)})"
+        )
+    if not quote_char.isascii() or quote_char in "\r\n\x00":
+        raise ConfigurationError(
+            "quote_char must be a single ASCII character other than CR, LF, or NUL"
+        )
 
     return quote_char
 
@@ -60,7 +79,11 @@ def validate_expected_columns(expected_columns: int | None) -> int | None:
     if expected_columns is None:
         return None
 
+    if type(expected_columns) is not int:
+        raise ConfigurationError("expected_columns must be an integer")
     if expected_columns <= 0:
-        raise ConfigurationError(f"expected_columns must be positive, got {expected_columns}")
+        raise ConfigurationError(
+            f"expected_columns must be positive, got {expected_columns}"
+        )
 
     return expected_columns

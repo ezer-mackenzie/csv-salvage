@@ -1,4 +1,5 @@
 """Streaming reader for salvaged CSV records."""
+
 from __future__ import annotations
 
 import sys
@@ -38,8 +39,8 @@ class SalvageReader:
         repair_quotes: bool = True,
     ) -> None:
         path = validate_input_path(file_path)
-        delim = validate_delimiter(delimiter)
         quote = validate_quote_char(quote_char)
+        delim = validate_delimiter(delimiter, quote)
         expected = validate_expected_columns(expected_columns)
 
         try:
@@ -53,7 +54,9 @@ class SalvageReader:
                 repair_quotes=repair_quotes,
             )
         except Exception as exc:
-            raise CorruptedFileError(f"Failed to open CSV file for salvage: {exc}") from exc
+            raise CorruptedFileError(
+                f"Failed to open CSV file for salvage: {exc}"
+            ) from exc
 
     @property
     def summary(self) -> _csv_salvage_backend.SalvageSummary:
