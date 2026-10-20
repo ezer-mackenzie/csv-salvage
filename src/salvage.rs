@@ -3,12 +3,15 @@
 use crate::error::SalvageError;
 use crate::heuristics::{infer_column_count, sniff_delimiter};
 use crate::parser::{Dialect, ResilientParser};
+use memmap2::MmapOptions;
 use rayon::prelude::*;
 use std::fs::File;
-use std::io::{BufWriter, Read, Write};
+use std::io::{BufWriter, Write};
 use std::path::Path;
 
 const PARALLEL_NORMALIZATION_THRESHOLD: usize = 1024;
+
+type SalvageFileRows = (Vec<Vec<String>>, Vec<QuarantineRecord>, SalvageSummary);
 
 #[derive(Debug, Clone)]
 pub struct SalvageOptions {
@@ -208,18 +211,36 @@ pub fn salvage_slice(
     (salvaged, quarantine, summary)
 }
 
+pub(crate) fn salvage_file_rows(
+    input_path: impl AsRef<Path>,
+    options: &SalvageOptions,
+) -> Result<SalvageFileRows, SalvageError> {
+    let input_file = File::open(input_path)?;
+    let mapped = if input_file.metadata()?.len() == 0 {
+        None
+    } else {
+        // SAFETY: The mapping is read-only and is consumed before this function
+        // returns. Callers must not modify the input file during this operation.
+        Some(unsafe { MmapOptions::new().map(&input_file)? })
+    };
+    let input = mapped.as_deref().unwrap_or_default();
+    let result = salvage_slice(input, options);
+
+    drop(mapped);
+    drop(input_file);
+    Ok(result)
+}
+
 /// Reads a corrupted CSV file, repairs it, and writes an RFC-4180 clean file + optional quarantine log.
+///
+/// The input file must not be modified while the operation is running.
 pub fn salvage_file(
     input_path: impl AsRef<Path>,
     output_path: impl AsRef<Path>,
     quarantine_path: Option<impl AsRef<Path>>,
     options: &SalvageOptions,
 ) -> Result<SalvageSummary, SalvageError> {
-    let mut input_file = File::open(input_path.as_ref())?;
-    let mut buffer = Vec::new();
-    input_file.read_to_end(&mut buffer)?;
-
-    let (salvaged, quarantine, summary) = salvage_slice(&buffer, options);
+    let (salvaged, quarantine, summary) = salvage_file_rows(input_path, options)?;
 
     // Write cleaned output file
     let out_file = File::create(output_path.as_ref())?;

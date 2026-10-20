@@ -76,6 +76,10 @@ print(summary)
 # <SalvageSummary total_rows=1500 salvaged_rows=1500 repaired_rows=42 quarantined_rows=0 delimiter=',' inferred_columns=12>
 ```
 
+File input is memory-mapped to avoid a second full-size copy of the raw bytes.
+Parsed rows are still materialized in memory, so this does not guarantee
+constant-memory operation. Do not modify the input file during salvage.
+
 ### 2. Streaming Rows Directly
 
 You can open and iterate through salvaged rows in Python without writing an intermediate file:

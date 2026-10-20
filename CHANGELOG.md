@@ -8,7 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Comprehensive benchmark suite comparing performance against Python regex scripts, standard `csv`, `clevercsv`, and `pandas`.
+- Extend benchmark comparisons to CleverCSV, pandas, and representative cleanup scripts for v1.0.0.
+
+## [0.6.0] - 2026-10-20
+
+### Added
+- Read-only memory-mapped input for file salvage and `SalvageReader`, avoiding a separate full-file input buffer.
+- Configurable, standard-library benchmark comparisons for Python's CSV parser, csv-salvage file APIs, and installed PyArrow/Polars adapters.
+- Tests for empty inputs and in-place file salvage.
+
+### Changed
+- Document that memory mapping removes the raw input copy but does not make row parsing or dataframe adapters constant-memory.
 
 ## [0.5.0] - 2026-10-19
 

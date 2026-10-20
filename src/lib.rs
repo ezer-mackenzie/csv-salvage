@@ -13,8 +13,7 @@ pub use salvage::{
 
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
-use std::fs::File;
-use std::io::Read;
+use salvage::salvage_file_rows;
 
 /// Python-exposed summary of a salvage operation.
 #[pyclass(name = "SalvageSummary", skip_from_py_object)]
@@ -170,10 +169,6 @@ impl PySalvageReader {
         expected_columns: Option<usize>,
         repair_quotes: bool,
     ) -> PyResult<Self> {
-        let mut file = File::open(&file_path)?;
-        let mut buffer = Vec::new();
-        file.read_to_end(&mut buffer)?;
-
         let delim_byte = delimiter.and_then(|d| d.as_bytes().first().copied());
         let quote_byte = quote_char.as_bytes().first().copied().unwrap_or(b'"');
 
@@ -186,7 +181,7 @@ impl PySalvageReader {
             expected_columns,
         };
 
-        let (salvaged, _quarantine, summary) = salvage_slice(&buffer, &options);
+        let (salvaged, _quarantine, summary) = salvage_file_rows(&file_path, &options)?;
 
         Ok(Self {
             rows: salvaged,

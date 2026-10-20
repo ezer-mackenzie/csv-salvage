@@ -34,4 +34,9 @@ The Rust core is built for maximum throughput and resilience:
 - **Zero-Panic Guarantee:** Uses `Result<T, SalvageError>` internally and avoids panics on malformed input.
 - **DFA State Machine:** Manages in-cell transitions between unquoted, quoted, escaped, and trailing quote states.
 - **Zero-Copy Byte Slices:** Operates on raw byte slices for high parsing throughput.
+- **Memory-Mapped File Input:** File APIs parse a read-only mapping and avoid allocating a second full-sized buffer for source bytes. Parsed rows are still materialized in memory; this is not constant-memory streaming.
 - **Decoupled Architecture:** Core logic (`parser`, `heuristics`, `salvage`, `error`) is decoupled from PyO3, allowing standalone Rust usage.
+
+Input files must not be modified during a salvage operation. The mapping is
+released before output files are created, so using the same path for input and
+output remains supported.

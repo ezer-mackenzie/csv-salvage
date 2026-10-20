@@ -47,7 +47,6 @@ docs = [
     "mkdocs>=1.6,<2.0",
 ]
 dev = [
-    "benchcore>=1.0.0 ; python_full_version >= '3.12'",
     "maturin>=1.15,<2.0",
     "pytest>=8.0",
 ]

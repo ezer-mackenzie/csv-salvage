@@ -12,7 +12,7 @@ class SalvageIntegrationTests(unittest.TestCase):
     def test_metadata(self):
         self.assertTrue(hasattr(cs, "__version__"))
         self.assertIsInstance(cs.__version__, str)
-        self.assertEqual(cs.__version__, "0.5.0")
+        self.assertEqual(cs.__version__, "0.6.0")
         for symbol in (
             "salvage_file",
             "sniff",
@@ -114,6 +114,25 @@ class SalvageIntegrationTests(unittest.TestCase):
             self.assertEqual(rows[0], ["col1", "col2"])
             self.assertEqual(rows[1], ["val1", "val2"])
             self.assertEqual(rows[2], ["val3", "val4"])
+
+    def test_salvage_file_supports_empty_and_in_place_files(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            input_path = os.path.join(tmpdir, "input.csv")
+
+            with open(input_path, "w", encoding="utf-8"):
+                pass
+            empty_summary = cs.salvage_file(input_path, input_path)
+            self.assertEqual(empty_summary.total_rows, 0)
+            self.assertEqual(os.path.getsize(input_path), 0)
+
+            with open(input_path, "w", encoding="utf-8") as file:
+                file.write("id,name\n1,Alice\n")
+            summary = cs.salvage_file(input_path, input_path)
+            self.assertEqual(summary.total_rows, 2)
+
+            with open(input_path, "r", encoding="utf-8", newline="") as file:
+                rows = list(csv.reader(file))
+            self.assertEqual(rows, [["id", "name"], ["1", "Alice"]])
 
 
 if __name__ == "__main__":

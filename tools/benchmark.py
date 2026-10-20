@@ -1,81 +1,146 @@
-"""Benchmark suite for csv-salvage powered by benchcore."""
+"""Compare salvage parsing and its optional dataframe adapters with Python csv."""
 from __future__ import annotations
 
+import csv
+import importlib.util
+import os
+import statistics
 import tempfile
+import time
+from collections.abc import Callable
 from pathlib import Path
-
-from benchcore import Bench
-from benchcore.core.models.benchmark_config import BenchmarkConfig
-from benchcore.reporting import TerminalReporter, create_report
 
 import csv_salvage
 
-SAMPLE_MALFORMED_CSV = """id,name,description,price,status
-1,Widget A,"Clean standard item",19.99,active
-2,Widget B,"Unescaped "quote" in middle",29.99,active
-3,Widget C,"Multiline
-description with unescaped newline",39.99,pending
-4,Widget D,Missing closing quote, active, extra_column_data
-5,Widget E,"Normal",49.99
-6,Widget F,"Another "broken" quote",59.99,archived
-7,Widget G,"Ragged row with missing columns"
-8,Widget H,"Valid item",89.99,active
-""" * 50
+DEFAULT_ROWS = 50_000
 
 
-def benchmark_sniffer() -> None:
-    csv_salvage.sniff(SAMPLE_MALFORMED_CSV)
+def _positive_row_count() -> int:
+    raw_value = os.environ.get("CSV_SALVAGE_BENCH_ROWS", str(DEFAULT_ROWS))
+    try:
+        row_count = int(raw_value)
+    except ValueError as exc:
+        raise ValueError("CSV_SALVAGE_BENCH_ROWS must be a positive integer") from exc
+    if row_count <= 0:
+        raise ValueError("CSV_SALVAGE_BENCH_ROWS must be a positive integer")
+    return row_count
+
+
+def _write_dataset(path: Path, row_count: int) -> None:
+    with path.open("w", encoding="utf-8", newline="") as output:
+        writer = csv.writer(output, lineterminator="\n")
+        writer.writerow(("id", "name", "description", "price", "status"))
+        for index in range(row_count):
+            writer.writerow(
+                (
+                    index,
+                    f"Widget {index}",
+                    f"Representative product description {index}",
+                    f"{index / 100:.2f}",
+                    "active" if index % 2 == 0 else "pending",
+                )
+            )
+
+
+def _assert_row_count(name: str, actual: int, expected: int) -> None:
+    if actual != expected:
+        raise RuntimeError(f"{name} returned {actual} rows; expected {expected}")
+
+
+def _run_benchmark(name: str, fn: Callable[[], int], row_count: int) -> None:
+    durations = []
+    for _ in range(5):
+        start = time.perf_counter_ns()
+        fn()
+        durations.append(time.perf_counter_ns() - start)
+    median_ns = statistics.median(durations)
+    print(
+        f"{name}: median={median_ns / 1_000_000:.3f} ms, "
+        f"range={min(durations) / 1_000_000:.3f}-"
+        f"{max(durations) / 1_000_000:.3f} ms, "
+        f"throughput={row_count / (median_ns / 1_000_000_000):,.0f} rows/s "
+        "(5 rounds)"
+    )
 
 
 def run_benchmarks() -> None:
+    row_count = _positive_row_count()
     print("=" * 60)
-    print(" Running csv-salvage benchmarks with BenchCore")
+    print(" Comparing csv-salvage with Python CSV readers")
     print("=" * 60)
-
-    config = BenchmarkConfig(rounds=5, target_round_time_ns=50_000_000)
-    runner = Bench(config=config)
-    reporter = TerminalReporter()
-
-    # 1. Delimiter Sniffing
-    print("\n[1/3] Benchmarking Delimiter Sniffing...")
-    sniff_result = runner.run(benchmark_sniffer)
-    sniff_report = create_report("csv_salvage.sniff", sniff_result)
-    print(reporter.render(sniff_report))
+    print(f"Dataset rows: {row_count:,} (set CSV_SALVAGE_BENCH_ROWS to change)")
+    print(
+        "Python csv is a parse-only reference; salvage and adapter timings include "
+        "inference, normalization, and materialization."
+    )
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        input_file = Path(tmp_dir) / "corrupted_input.csv"
-        input_file.write_text(SAMPLE_MALFORMED_CSV, encoding="utf-8")
-        clean_file = Path(tmp_dir) / "salvaged_clean.csv"
-        quarantine_file = Path(tmp_dir) / "quarantined.csv"
+        input_file = Path(tmp_dir) / "benchmark.csv"
+        clean_file = Path(tmp_dir) / "clean.csv"
+        _write_dataset(input_file, row_count)
+        print(f"Input size: {input_file.stat().st_size:,} bytes")
 
-        # 2. Streaming with SalvageReader
-        def benchmark_streaming() -> int:
-            row_count = 0
-            with csv_salvage.SalvageReader(input_file) as reader:
-                for row in reader:
-                    row_count += len(row)
-            return row_count
+        def benchmark_python_csv() -> int:
+            with input_file.open("r", encoding="utf-8", newline="") as source:
+                return sum(1 for _ in csv.reader(source))
 
-        print("\n[2/3] Benchmarking SalvageReader Streaming...")
-        stream_result = runner.run(benchmark_streaming)
-        stream_report = create_report("csv_salvage.SalvageReader (streaming)", stream_result)
-        print(reporter.render(stream_report))
+        def benchmark_salvage_reader() -> int:
+            with csv_salvage.open(input_file) as reader:
+                return sum(1 for _ in reader)
 
-        # 3. End-to-End File Salvage
-        def benchmark_salvage_file() -> None:
-            csv_salvage.salvage_file(
-                input_file,
-                clean_file,
-                quarantine_path=quarantine_file,
+        expected_rows = row_count + 1
+        _assert_row_count("Python csv.reader", benchmark_python_csv(), expected_rows)
+        _assert_row_count(
+            "csv-salvage reader", benchmark_salvage_reader(), expected_rows
+        )
+
+        print("\n[1/4] Python standard-library CSV parser")
+        _run_benchmark("python.csv.reader", benchmark_python_csv, expected_rows)
+
+        print("\n[2/4] csv-salvage reader (memory-mapped input)")
+        _run_benchmark("csv_salvage.open", benchmark_salvage_reader, expected_rows)
+
+        print("\n[3/4] csv-salvage end-to-end repair (mapped input + output I/O)")
+
+        def benchmark_salvage_file() -> int:
+            return csv_salvage.salvage_file(input_file, clean_file).salvaged_rows
+
+        _assert_row_count(
+            "csv-salvage file API", benchmark_salvage_file(), expected_rows
+        )
+        _run_benchmark(
+            "csv_salvage.salvage_file", benchmark_salvage_file, expected_rows
+        )
+
+        print("\n[4/4] Optional dataframe adapters")
+        if importlib.util.find_spec("pyarrow") is not None:
+            def benchmark_pyarrow() -> int:
+                return csv_salvage.read_pyarrow(input_file).num_rows
+
+            _assert_row_count("PyArrow adapter", benchmark_pyarrow(), expected_rows)
+            _run_benchmark(
+                "csv_salvage.read_pyarrow",
+                benchmark_pyarrow,
+                expected_rows,
             )
+        else:
+            print("Skipping PyArrow adapter: install csv-salvage[arrow].")
 
-        print("\n[3/3] Benchmarking End-to-End File Salvage...")
-        salvage_result = runner.run(benchmark_salvage_file)
-        salvage_report = create_report("csv_salvage.salvage_file (disk I/O)", salvage_result)
-        print(reporter.render(salvage_report))
+        if importlib.util.find_spec("polars") is not None:
+            def benchmark_polars() -> int:
+                return csv_salvage.read_polars(input_file).height
+
+            _assert_row_count("Polars adapter", benchmark_polars(), expected_rows)
+            _run_benchmark(
+                "csv_salvage.read_polars",
+                benchmark_polars,
+                expected_rows,
+            )
+        else:
+            print("Skipping Polars adapter: install csv-salvage[polars].")
 
     print("=" * 60)
-    print(" All benchmarks completed successfully.")
+    print(" Benchmarks completed. Results depend on hardware, OS, and cache state.")
     print("=" * 60)
 
 

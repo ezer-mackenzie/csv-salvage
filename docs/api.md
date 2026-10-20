@@ -19,6 +19,10 @@ def salvage_file(
 ```
 
 Salvages a corrupted CSV file and writes a clean, standard RFC-4180 file.
+The source is read through a read-only memory map, avoiding a separate full-file
+input buffer. Parsed rows are still materialized in memory, and the input file
+must not be modified while the operation is running. Input and output may refer
+to the same path.
 
 - **`input_path`**: Path to the corrupted CSV input file.
 - **`output_path`**: Destination path for the repaired clean CSV.
@@ -53,6 +57,8 @@ def open(
 ```
 
 Opens a corrupted CSV file for streaming row iteration in Python.
+The source is read through a memory map, but rows are currently materialized
+before iteration; this API does not guarantee constant memory usage.
 
 ### `read_pyarrow()` and `read_polars()`
 

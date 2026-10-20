@@ -34,6 +34,7 @@ Today, data engineers and analysts resort to writing **slow, brittle Python regu
 * **DFA & State-Machine Parser:** Custom finite state automaton (DFA via manual state machine or `regex-automata`) engineered specifically for error-recovery, token resynchronization, and zero-panic resilience.
 * **Schema Inference Heuristics:** Adaptive detection of expected column counts, delimiters, and dialect conventions even in chaotic files.
 * **Parallel Row Normalization:** Parsed rows are normalized with Rayon in parallel for larger inputs (1,024 or more rows); quote-aware parsing remains sequential to preserve multiline CSV boundaries.
+* **Memory-Mapped File Input:** File-based APIs read from a read-only mapping instead of first allocating a second full-size input buffer.
 
 ---
 
@@ -133,6 +134,10 @@ provide zero-copy parsing. Input header rows remain data rows, matching
 `cs.open()`; `column_names` only labels the result columns. Rows quarantined by
 the normalization settings are omitted from the dataframe.
 
+File-based salvage uses memory-mapped input. The parser still materializes
+parsed rows, so this reduces the raw-input copy but does not provide constant
+memory usage. Do not modify an input file while a salvage operation is running.
+
 ### 5. Rust Library Usage
 
 ```rust
@@ -158,7 +163,8 @@ println!("Successfully salvaged {} rows!", summary.salvaged_rows);
 - [x] v0.2: release automation and cross-platform CI.
 - [x] v0.3: parallel normalization of large row sets and accelerated quote lookahead.
 - [x] v0.4: CLI for file repair.
-- [ ] v0.5: optional Arrow-compatible integration.
+- [x] v0.5: optional PyArrow and Polars integrations.
+- [x] v0.6: memory-mapped file input and configurable performance comparisons.
 - [ ] v1.0: benchmark suite, stable API/support contract, and production-readiness review.
 
 ---
@@ -179,6 +185,12 @@ cargo test
 
 # Run Python integration and release tests
 uv run python -m unittest discover -s tests -v
+
+# Compare parser and adapter throughput (optional adapters run when installed)
+uv run tools/benchmark.py
+# Scale the generated input; for example, target approximately 1 million data rows
+$env:CSV_SALVAGE_BENCH_ROWS = "1000000"
+uv run tools/benchmark.py
 
 # Check formatting and lints
 cargo fmt --check

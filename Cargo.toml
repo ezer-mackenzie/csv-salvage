@@ -1,6 +1,6 @@
 [package]
 name = "csv-salvage"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2024"
 rust-version = "1.85"
 description = "High-performance, fault-tolerant CSV salvage and reconstruction engine powered by Rust and PyO3"
@@ -21,5 +21,6 @@ extension-module = ["pyo3/extension-module"]
 
 [dependencies]
 memchr = "2.7"
+memmap2 = "0.9"
 pyo3 = { version = "0.29.0" }
 rayon = "1.11"
