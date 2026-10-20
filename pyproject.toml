@@ -50,6 +50,10 @@ dev = [
     "maturin>=1.15,<2.0",
     "pytest>=8.0",
 ]
+bench = [
+    "clevercsv>=0.8,<1.0",
+    "pandas>=2.0,<3.0",
+]
 
 [tool.maturin]
 module-name = "csv_salvage._csv_salvage_backend"

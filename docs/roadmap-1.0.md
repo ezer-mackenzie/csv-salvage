@@ -44,9 +44,13 @@ Memory-mapped file I/O was deferred to v0.6.0.
 - [x] Memory-mapped file I/O to avoid a separate full-file input buffer.
 - [x] Configurable benchmarks for the native API, Python's standard CSV parser, and optional dataframe adapters.
 
+## v0.7.0 (Benchmark Comparisons)
+
+- [x] Optional, benchmark-only comparisons with CleverCSV and pandas.
+- [x] Include a constrained regex cleanup baseline and verify row counts before timing.
+
 ---
 
 ## v1.0.0 (Production Hardening)
 
-- [ ] Extend the benchmark suite with CleverCSV, pandas, and representative cleanup scripts.
 - [ ] Support contract freezing and stable public API commitment.

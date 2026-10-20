@@ -8,7 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Extend benchmark comparisons to CleverCSV, pandas, and representative cleanup scripts for v1.0.0.
+- Define the stable public API and support contract for v1.0.0.
+
+## [0.7.0] - 2026-10-20
+
+### Added
+- Optional benchmark dependencies for CleverCSV and pandas, isolated from runtime requirements.
+- Valid-CSV comparisons with Python's csv module, CleverCSV, pandas, and csv-salvage.
+- A benchmark-only regex cleanup baseline for single-line rows with unescaped quotes, with a matching repair correctness test.
+
+### Changed
+- Require benchmark implementations to return the expected row count before reporting timing results.
 
 ## [0.6.0] - 2026-10-20
 

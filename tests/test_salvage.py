@@ -12,7 +12,7 @@ class SalvageIntegrationTests(unittest.TestCase):
     def test_metadata(self):
         self.assertTrue(hasattr(cs, "__version__"))
         self.assertIsInstance(cs.__version__, str)
-        self.assertEqual(cs.__version__, "0.6.0")
+        self.assertEqual(cs.__version__, "0.7.0")
         for symbol in (
             "salvage_file",
             "sniff",

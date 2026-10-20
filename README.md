@@ -165,6 +165,7 @@ println!("Successfully salvaged {} rows!", summary.salvaged_rows);
 - [x] v0.4: CLI for file repair.
 - [x] v0.5: optional PyArrow and Polars integrations.
 - [x] v0.6: memory-mapped file input and configurable performance comparisons.
+- [x] v0.7: optional comparisons with CleverCSV, pandas, and a constrained regex repair baseline.
 - [ ] v1.0: benchmark suite, stable API/support contract, and production-readiness review.
 
 ---
@@ -188,6 +189,9 @@ uv run python -m unittest discover -s tests -v
 
 # Compare parser and adapter throughput (optional adapters run when installed)
 uv run tools/benchmark.py
+# Install CleverCSV and pandas to enable the full comparison suite
+uv sync --group bench
+uv run tools/benchmark.py
 # Scale the generated input; for example, target approximately 1 million data rows
 $env:CSV_SALVAGE_BENCH_ROWS = "1000000"
 uv run tools/benchmark.py
@@ -199,6 +203,12 @@ cargo clippy --all-targets --all-features -- -D warnings
 # Build documentation strictly
 uv run --group docs mkdocs build --strict
 ```
+
+The benchmark suite checks row counts before timing each implementation. Its
+regex cleanup baseline only handles single-line, comma-separated rows with
+unescaped quotes; it is a narrow comparison case, not a general CSV repair
+strategy. Timings are informational and are not a claim that parsers perform
+equivalent recovery or validation work.
 
 ---
 
