@@ -8,7 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Add full supported-Python-version CI coverage and finalize the 1.0 release contract.
+- Finalize the stable compatibility commitment and production support policy for 1.0.0.
+
+## [0.9.0] - 2026-10-20
+
+### Added
+- Dedicated CI coverage running the complete Python test suite on CPython 3.9 through 3.14.
+
+### Changed
+- Align support and security policy with the runtime versions validated in CI.
 
 ## [0.8.0] - 2026-10-20
 

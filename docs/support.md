@@ -12,6 +12,7 @@
 
 - Supported: CPython 3.9 through 3.14.
 - PyPy is not part of the supported runtime or published-wheel contract.
+- CI runs the Python test suite on every supported CPython minor version.
 
 ### Rust MSRV
 

@@ -56,8 +56,8 @@ Memory-mapped file I/O was deferred to v0.6.0.
 
 ## v0.9.0 (Compatibility Hardening)
 
-- [ ] Run tests across every supported CPython minor version in CI.
-- [ ] Align published support and security policy with tested runtimes.
+- [x] Run tests across every supported CPython minor version in CI.
+- [x] Align published support and security policy with tested runtimes.
 
 ---
 
